@@ -29,14 +29,23 @@ topdir = '/projects/CHARIS/derived_hypsometries/MODSCAG_GF_v09_fromFile_rainv01_
 
 source_types = ['exposed_glacier_ice', 'snow_on_ice', 'snow_on_land']
 
-for typ in source_types:
-    year_range = range(2001, 2014 + 1)
-    year_range = range(2001, 2001 + 1)
-    for year in year_range:
-        melt = melt_by_elev(year, typ)
-        print("{}, {}".format(typ, year))
-        print(melt)
+contribs_all = None
 
+for typ in source_types:
+    #year_range = range(2001, 2001 + 1)
+    year_range = range(2001, 2014 + 1)
+    mean_contrib = pd.concat([melt_by_elev(yr, typ) for yr in year_range], axis=1).mean(axis=1)
+    #print("=== Type {} ===".format(typ))
+    #print(mean_contrib)
+    if contribs_all is None:
+        contribs_all = mean_contrib
+    else:
+        contribs_all = pd.concat((contribs_all, mean_contrib), axis=1)
+
+contribs_all.columns = source_types
+with pd.option_context('display.max_rows', None):
+    print(contribs_all)
+#contribs_all.to_csv('mean_contribs_by_type.csv')
 
 # Example set of files:
 # 
