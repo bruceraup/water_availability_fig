@@ -65,15 +65,20 @@ def main():
         else:
             contribs_fullbasin = contribs_fullbasin.add(contribs_onebasin, fill_value=0.0)
 
+    # Resample to 500 m elevation bands
+    binsize = 500
+    contribs500m = contribs_fullbasin.groupby(contribs_fullbasin.index // binsize).sum()
+    contribs500m.index = contribs500m.index * binsize
+
     with pd.option_context('display.max_rows', None):
-        print(contribs_fullbasin)
+        print(contribs500m)
     #contribs_all.to_csv('mean_contribs_by_type.csv')
 
 
 if __name__ == '__main__':
     main()
 
-# Example set of files:
+# Example set of files for one year, one subbasin, and the three source types:
 # 
 # IN_Hunza_at_DainyorBridge.2001.0100m.modicev04_3strike.GRSIZE_SCAG.fromFile.exposed_glacier_ice_melt_by_elev.best_Hunza_model.txt
 # IN_Hunza_at_DainyorBridge.2001.0100m.modicev04_3strike.GRSIZE_SCAG.fromFile.snow_on_ice_melt_by_elev.best_Hunza_model.txt
