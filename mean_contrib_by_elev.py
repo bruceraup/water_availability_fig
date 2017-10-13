@@ -9,7 +9,7 @@ import pandas as pd
 import hypsometry_utils as hu
 
 
-def melt_by_elev(year, typ):
+def melt_by_elev(topdir, year, typ):
     """
     Calculate a table of melt contribution by elevation band, given a year and
     a source type.
@@ -25,27 +25,37 @@ def melt_by_elev(year, typ):
     return elev_sum
 
 
-topdir = '/projects/CHARIS/derived_hypsometries/MODSCAG_GF_v09_fromFile_rainv01_less_ET/IN_Hunza_at_DainyorBridge/'
+def do_one_basin(topdir):
+    source_types = ['exposed_glacier_ice', 'snow_on_ice', 'snow_on_land']
 
-source_types = ['exposed_glacier_ice', 'snow_on_ice', 'snow_on_land']
+    contribs_all = None
+    startyear = 2001
+    endyear = 2014
 
-contribs_all = None
+    for typ in source_types:
+        year_range = range(startyear, endyear + 1)
+        mean_contrib = pd.concat([melt_by_elev(topdir, yr, typ) for yr in year_range], axis=1).mean(axis=1)
+        #print("=== Type {} ===".format(typ))
+        #print(mean_contrib)
+        if contribs_all is None:
+            contribs_all = mean_contrib
+        else:
+            contribs_all = pd.concat((contribs_all, mean_contrib), axis=1)
 
-for typ in source_types:
-    #year_range = range(2001, 2001 + 1)
-    year_range = range(2001, 2014 + 1)
-    mean_contrib = pd.concat([melt_by_elev(yr, typ) for yr in year_range], axis=1).mean(axis=1)
-    #print("=== Type {} ===".format(typ))
-    #print(mean_contrib)
-    if contribs_all is None:
-        contribs_all = mean_contrib
-    else:
-        contribs_all = pd.concat((contribs_all, mean_contrib), axis=1)
+    contribs_all.columns = source_types
+    with pd.option_context('display.max_rows', None):
+        print(contribs_all)
+    #contribs_all.to_csv('mean_contribs_by_type.csv')
 
-contribs_all.columns = source_types
-with pd.option_context('display.max_rows', None):
-    print(contribs_all)
-#contribs_all.to_csv('mean_contribs_by_type.csv')
+
+def main():
+
+    topdir = '/projects/CHARIS/derived_hypsometries/MODSCAG_GF_v09_fromFile_rainv01_less_ET/IN_Hunza_at_DainyorBridge/'
+    do_one_basin(topdir)
+
+
+if __name__ == '__main__':
+    main()
 
 # Example set of files:
 # 
